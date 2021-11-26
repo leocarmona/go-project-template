@@ -1,0 +1,25 @@
+---
+version: '3.8'
+services:
+  # Postgres database
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_DB: go-project-template
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "6432:5432"
+    networks:
+      - postgres-compose-network
+
+  # Redis database
+  redis:
+    image: redis
+    command: redis-server
+    ports:
+      - "6379:6379"
+
+networks:
+  postgres-compose-network:
+    driver: bridge
