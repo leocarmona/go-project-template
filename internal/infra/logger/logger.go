@@ -55,21 +55,6 @@ func newZap(options ...zap.Option) (*zap.Logger, error) {
 	return newZapConfig().Build(options...)
 }
 
-//func zapRotation() {
-//	w := zapcore.AddSync(&lumberjack.Logger{
-//		Filename:   "/var/log/myapp/foo.log",
-//		MaxSize:    10, // megabytes
-//		MaxBackups: 3,
-//		MaxAge:     7, // days
-//	})
-//	core := zapcore.NewCore(
-//		zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
-//		w,
-//		zap.InfoLevel,
-//	)
-//	logger := zap.New(core)
-//}
-
 func newZapConfig() zap.Config {
 	logLevel := zap.NewAtomicLevel()
 	err := logLevel.UnmarshalText([]byte(variables.LogLevel()))
