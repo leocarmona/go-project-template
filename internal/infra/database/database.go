@@ -79,7 +79,7 @@ func (d *Database) initializeAndGetDB() *sql.DB {
 	defer cancel()
 
 	if err = db.PingContext(timeout); err != nil {
-		logger.Fatal(context.Background(), fmt.Sprintf("Failed to connect to the database %s with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
+		logger.Fatal(context.Background(), fmt.Sprintf("Failed to connect to the database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
 	}
 
 	db.SetMaxIdleConns(d.config.MinConnections)
