@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/leocarmona/go-project-template/internal/infra/variables"
+	"sync"
 )
 
 type Databases struct {
@@ -13,11 +14,15 @@ type Databases struct {
 }
 
 func NewDatabases() *Databases {
-	return &Databases{
-		Read:  newReadDatabase(),
-		Write: newWriteDatabase(),
-		Redis: newRedisDatabase(),
-	}
+	dbs := &Databases{}
+	var waitGroup sync.WaitGroup
+	defer waitGroup.Wait()
+
+	dbs.buildReadDatabase(&waitGroup)
+	dbs.buildWriteDatabase(&waitGroup)
+	dbs.buildRedisDatabase(&waitGroup)
+
+	return dbs
 }
 
 func (d *Databases) Close() {
@@ -26,8 +31,9 @@ func (d *Databases) Close() {
 	d.Redis.Close()
 }
 
-func newReadDatabase() *Database {
-	return NewPostgres(&SqlConfig{
+func (d *Databases) buildReadDatabase(waitGroup *sync.WaitGroup) {
+	lazyConnection := variables.DBReadLazyConnection()
+	cfg := &SqlConfig{
 		ConnectionName:        variables.ServiceName() + "-read",
 		Host:                  variables.DBReadHost(),
 		Port:                  variables.DBReadPort(),
@@ -38,12 +44,23 @@ func newReadDatabase() *Database {
 		MaxConnections:        variables.DBReadMaxConnections(),
 		ConnectionMaxLifetime: variables.DBReadConnectionMaxLifeTime(),
 		ConnectionMaxIdleTime: variables.DBReadConnectionMaxIdleTime(),
-		LazyConnection:        variables.DBReadLazyConnection(),
-	})
+		LazyConnection:        lazyConnection,
+	}
+
+	if lazyConnection {
+		d.Read = NewPostgres(cfg)
+	} else {
+		waitGroup.Add(1)
+		go func() {
+			defer waitGroup.Done()
+			d.Read = NewPostgres(cfg)
+		}()
+	}
 }
 
-func newWriteDatabase() *Database {
-	return NewPostgres(&SqlConfig{
+func (d *Databases) buildWriteDatabase(waitGroup *sync.WaitGroup) {
+	lazyConnection := variables.DBWriteLazyConnection()
+	cfg := &SqlConfig{
 		ConnectionName:        variables.ServiceName() + "-write",
 		Host:                  variables.DBWriteHost(),
 		Port:                  variables.DBWritePort(),
@@ -54,14 +71,35 @@ func newWriteDatabase() *Database {
 		MaxConnections:        variables.DBWriteMaxConnections(),
 		ConnectionMaxLifetime: variables.DBWriteConnectionMaxLifeTime(),
 		ConnectionMaxIdleTime: variables.DBWriteConnectionMaxIdleTime(),
-		LazyConnection:        variables.DBWriteLazyConnection(),
-	})
+		LazyConnection:        lazyConnection,
+	}
+
+	if lazyConnection {
+		d.Write = NewPostgres(cfg)
+	} else {
+		waitGroup.Add(1)
+		go func() {
+			defer waitGroup.Done()
+			d.Write = NewPostgres(cfg)
+		}()
+	}
 }
 
-func newRedisDatabase() *Redis {
-	return NewRedis(&redis.Options{
+func (d *Databases) buildRedisDatabase(waitGroup *sync.WaitGroup) {
+	lazyConnection := variables.RedisLazyConnection()
+	opt := &redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", variables.RedisHost(), variables.RedisPort()),
 		Password: variables.RedisPassword(),
 		DB:       variables.RedisDB(),
-	}, variables.RedisLazyConnection())
+	}
+
+	if lazyConnection {
+		d.Redis = NewRedis(opt, lazyConnection)
+	} else {
+		waitGroup.Add(1)
+		go func() {
+			defer waitGroup.Done()
+			d.Redis = NewRedis(opt, lazyConnection)
+		}()
+	}
 }
