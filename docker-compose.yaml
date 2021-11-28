@@ -12,6 +12,11 @@ services:
       - "6432:5432"
     networks:
       - postgres-compose-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 3s
+      retries: 1
 
   # Redis database
   redis:
@@ -19,6 +24,11 @@ services:
     command: redis-server
     ports:
       - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli","ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 1
 
 networks:
   postgres-compose-network:
