@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/labstack/echo/v4"
@@ -14,6 +15,7 @@ import (
 	"github.com/leocarmona/go-project-template/internal/infra/server"
 	"github.com/leocarmona/go-project-template/internal/infra/variables"
 	"sync"
+	"time"
 )
 
 type App struct {
@@ -40,17 +42,15 @@ func (app *App) Start(async bool) {
 		return
 	}
 
-	app.setRunning(true)
-	logger.Info(context.Background(), "Starting application", nil)
+	start := time.Now()
+	logger.Info(context.Background(), fmt.Sprintf("Starting application %s:%s", variables.ServiceName(), variables.ServiceVersion()), nil)
 
 	app.build()
-	logger.Info(context.Background(), "Application started", nil)
-	app.locker.Unlock()
 
 	if async {
-		go app.startServer()
+		go app.startServer(start)
 	} else {
-		app.startServer()
+		app.startServer(start)
 	}
 }
 
@@ -81,8 +81,12 @@ func (app *App) IsRunning() bool {
 	return app.running
 }
 
-func (app *App) startServer() {
+func (app *App) startServer(start time.Time) {
 	defer app.setRunning(false)
+	go func() {
+		app.printElapsed(start)
+		app.locker.Unlock()
+	}()
 
 	if variables.IsLambda() {
 		lambdaAdapter := &aws.LambdaAdapter{Echo: app.server}
@@ -107,6 +111,11 @@ func (app *App) dispose() {
 	app.handlers = nil
 	app.services = nil
 	app.databases = nil
+}
+
+func (app *App) printElapsed(start time.Time) {
+	elapsed := time.Since(start)
+	logger.Info(context.Background(), fmt.Sprintf("Application %s:%s started in %v", variables.ServiceName(), variables.ServiceVersion(), elapsed.String()), nil)
 }
 
 func (app *App) setRunning(run bool) {
