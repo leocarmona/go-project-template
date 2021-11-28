@@ -62,13 +62,9 @@ func (h *HealthHandler) health(c echo.Context) error {
 	waitGroup.Wait()
 
 	response := presenter.HealthResponse(read, write, redis)
-	var code int
-
 	if response.Healthy {
-		code = http.StatusOK
-	} else {
-		code = http.StatusServiceUnavailable
+		return c.JSON(http.StatusOK, response)
 	}
 
-	return c.JSON(code, response)
+	return c.JSON(http.StatusServiceUnavailable, response)
 }
