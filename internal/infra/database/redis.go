@@ -76,7 +76,7 @@ func (r *Redis) initializeAndGetRedis() *redis.Client {
 
 	for retry, duration := range r.retries {
 		if err = r.checkConnection(rdb); err != nil {
-			logger.Warn(context.Background(), fmt.Sprintf("Connection retry [%d]: Redis connection", retry + 1), r.configToAttribute().WithError(err))
+			logger.Warn(context.Background(), fmt.Sprintf("Connection retry [%d]: Redis connection", retry+1), r.configToAttribute().WithError(err))
 			time.Sleep(duration)
 		}
 	}

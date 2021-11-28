@@ -12,12 +12,13 @@ require (
 	github.com/facebookgo/stack v0.0.0-20160209184415-751773369052 // indirect
 	github.com/facebookgo/stats v0.0.0-20151006221625-1b76add642e4 // indirect
 	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect
-	github.com/go-redis/redis/v8 v8.11.4 // indirect
+	github.com/go-redis/redis/v8 v8.11.4
 	github.com/google/uuid v1.3.0
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/labstack/echo/v4 v4.6.1
 	github.com/labstack/gommon v0.3.1 // indirect
 	github.com/lib/pq v1.2.0
+	github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/stretchr/testify v1.7.0
@@ -28,7 +29,6 @@ require (
 	golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9
 	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	gopkg.in/h2non/baloo.v3 v3.0.2 // indirect
+	gopkg.in/h2non/baloo.v3 v3.0.2
 	gopkg.in/h2non/gentleman.v2 v2.0.5 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

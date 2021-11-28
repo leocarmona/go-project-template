@@ -87,7 +87,7 @@ func (d *Database) initializeAndGetDB() *sql.DB {
 		}
 
 		if err = d.checkConnection(db); err != nil {
-			logger.Warn(context.Background(), fmt.Sprintf("Connection retry [%d]: Database [%s] with connection [%s]", retry + 1, d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
+			logger.Warn(context.Background(), fmt.Sprintf("Connection retry [%d]: Database [%s] with connection [%s]", retry+1, d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
 			time.Sleep(duration)
 		}
 	}
