@@ -29,6 +29,7 @@ var (
 	dbReadName                   = &variable{key: "DB_READ_NAME", defaultValue: "go-project-template"}
 	dbReadUsername               = &variable{key: "DB_READ_USERNAME", defaultValue: "postgres"}
 	dbReadPassword               = &variable{key: "DB_READ_PASSWORD", defaultValue: "postgres123"}
+	dbReadLazyConnection         = &variable{key: "DB_READ_LAZY_CONNECTION", defaultValue: "true"}
 	dbReadMinConnections         = &variable{key: "DB_READ_MIN_CONNECTIONS", defaultValue: "2"}
 	dbReadMaxConnections         = &variable{key: "DB_READ_MAX_CONNECTIONS", defaultValue: "10"}
 	dbReadConnectionMaxLifeTime  = &variable{key: "DB_READ_CONNECTION_MAX_LIFE_TIME", defaultValue: "900"}
@@ -38,6 +39,7 @@ var (
 	dbWriteName                  = &variable{key: "DB_WRITE_NAME", defaultValue: "go-project-template"}
 	dbWriteUsername              = &variable{key: "DB_WRITE_USERNAME", defaultValue: "postgres"}
 	dbWritePassword              = &variable{key: "DB_WRITE_PASSWORD", defaultValue: "postgres123"}
+	dbWriteLazyConnection        = &variable{key: "DB_WRITE_LAZY_CONNECTION", defaultValue: "true"}
 	dbWriteMinConnections        = &variable{key: "DB_WRITE_MIN_CONNECTIONS", defaultValue: "2"}
 	dbWriteMaxConnections        = &variable{key: "DB_WRITE_MAX_CONNECTIONS", defaultValue: "10"}
 	dbWriteConnectionMaxLifeTime = &variable{key: "DB_WRITE_CONNECTION_MAX_LIFE_TIME", defaultValue: "900"}
@@ -46,6 +48,7 @@ var (
 	redisPort                    = &variable{key: "REDIS_PORT", defaultValue: "6379"}
 	redisPassword                = &variable{key: "REDIS_PASSWORD", defaultValue: ""}
 	redisDB                      = &variable{key: "REDIS_DB", defaultValue: "1"}
+	redisLazyConnection          = &variable{key: "REDIS_LAZY_CONNECTION", defaultValue: "true"}
 )
 
 func ServiceName() string {
@@ -100,6 +103,10 @@ func DBReadPassword() string {
 	return get(dbReadPassword)
 }
 
+func DBReadLazyConnection() bool {
+	return getBool(dbReadLazyConnection)
+}
+
 func DBReadMinConnections() int {
 	return getInt(dbReadMinConnections)
 }
@@ -136,6 +143,10 @@ func DBWritePassword() string {
 	return get(dbWritePassword)
 }
 
+func DBWriteLazyConnection() bool {
+	return getBool(dbWriteLazyConnection)
+}
+
 func DBWriteMinConnections() int {
 	return getInt(dbWriteMinConnections)
 }
@@ -166,6 +177,10 @@ func RedisPassword() string {
 
 func RedisDB() int {
 	return getInt(redisDB)
+}
+
+func RedisLazyConnection() bool {
+	return getBool(redisLazyConnection)
 }
 
 func get(env *variable) string {

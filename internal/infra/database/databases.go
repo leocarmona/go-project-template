@@ -38,7 +38,7 @@ func newReadDatabase() *Database {
 		MaxConnections:        variables.DBReadMaxConnections(),
 		ConnectionMaxLifetime: variables.DBReadConnectionMaxLifeTime(),
 		ConnectionMaxIdleTime: variables.DBReadConnectionMaxIdleTime(),
-		LazyConnection:        variables.IsLambda(),
+		LazyConnection:        variables.DBReadLazyConnection(),
 	})
 }
 
@@ -54,7 +54,7 @@ func newWriteDatabase() *Database {
 		MaxConnections:        variables.DBWriteMaxConnections(),
 		ConnectionMaxLifetime: variables.DBWriteConnectionMaxLifeTime(),
 		ConnectionMaxIdleTime: variables.DBWriteConnectionMaxIdleTime(),
-		LazyConnection:        variables.IsLambda(),
+		LazyConnection:        variables.DBWriteLazyConnection(),
 	})
 }
 
@@ -63,5 +63,5 @@ func newRedisDatabase() *Redis {
 		Addr:     fmt.Sprintf("%s:%d", variables.RedisHost(), variables.RedisPort()),
 		Password: variables.RedisPassword(),
 		DB:       variables.RedisDB(),
-	}, variables.IsLambda())
+	}, variables.RedisLazyConnection())
 }
