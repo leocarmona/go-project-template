@@ -48,7 +48,7 @@ func (d *Database) Close() {
 	}
 
 	if err := d.db.Close(); err != nil {
-		logger.Error(context.Background(), fmt.Sprintf("Failed to close database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute())
+		logger.Error(context.Background(), fmt.Sprintf("Failed to close database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
 	}
 
 	d.db = nil
@@ -96,7 +96,6 @@ func (d *Database) initializeAndGetDB() *sql.DB {
 
 func (d *Database) configToAttribute() attributes.Attributes {
 	config := d.config
-
 	return attributes.Attributes{
 		"database.connection_name":          config.ConnectionName,
 		"database.driver":                   config.Driver,

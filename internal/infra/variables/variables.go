@@ -1,6 +1,10 @@
 package variables
 
 import (
+	"context"
+	"fmt"
+	"github.com/leocarmona/go-project-template/internal/infra/logger"
+	"github.com/leocarmona/go-project-template/internal/infra/logger/attributes"
 	"os"
 	"strconv"
 	"time"
@@ -12,38 +16,48 @@ type variable struct {
 }
 
 var (
-	appName                 = &variable{key: "APP_NAME", defaultValue: "go-project-template"}
-	appVersion              = &variable{key: "APP_VERSION", defaultValue: "0.0.1"}
-	env                     = &variable{key: "ENV", defaultValue: "local"}
-	isLambda                = &variable{key: "LAMBDA", defaultValue: "false"}
-	logLevel                = &variable{key: "LOG_LEVEL", defaultValue: "debug"}
-	serverHost              = &variable{key: "SERVER_HOST", defaultValue: "0.0.0.0"}
-	serverPort              = &variable{key: "SERVER_PORT", defaultValue: "5000"}
-	serverTimeout           = &variable{key: "SERVER_TIMEOUT", defaultValue: "30"}
-	dbHost                  = &variable{key: "DB_HOST", defaultValue: "localhost"}
-	dbPort                  = &variable{key: "DB_PORT", defaultValue: "5432"}
-	dbName                  = &variable{key: "DB_NAME", defaultValue: "go-project-template"}
-	dbUsername              = &variable{key: "DB_USERNAME", defaultValue: "postgres"}
-	dbPassword              = &variable{key: "DB_PASSWORD", defaultValue: "postgres123"}
-	dbMinConnections        = &variable{key: "DB_MIN_CONNECTIONS", defaultValue: "1"}
-	dbMaxConnections        = &variable{key: "DB_MAX_CONNECTIONS", defaultValue: "10"}
-	dbConnectionMaxLifeTime = &variable{key: "DB_CONNECTION_MAX_LIFE_TIME", defaultValue: "0"}
-	dbConnectionMaxIdleTime = &variable{key: "DB_CONNECTION_MAX_IDLE_TIME", defaultValue: "15"}
-	redisEndpoint           = &variable{key: "REDIS_ENDPOINT", defaultValue: "localhost:6379"}
-	redisPassword           = &variable{key: "REDIS_PASSWORD", defaultValue: ""}
-	redisDB                 = &variable{key: "REDIS_DB", defaultValue: "1"}
+	serviceName                  = &variable{key: "SERVICE_NAME", defaultValue: "go-project-template"}
+	serviceVersion               = &variable{key: "SERVICE_VERSION", defaultValue: "0.0.1"}
+	environment                  = &variable{key: "ENVIRONMENT", defaultValue: "local"}
+	isLambda                     = &variable{key: "LAMBDA", defaultValue: "false"}
+	logLevel                     = &variable{key: "LOG_LEVEL", defaultValue: "debug"}
+	serverHost                   = &variable{key: "SERVER_HOST", defaultValue: "0.0.0.0"}
+	serverPort                   = &variable{key: "SERVER_PORT", defaultValue: "5000"}
+	serverTimeout                = &variable{key: "SERVER_TIMEOUT", defaultValue: "30"}
+	dbReadHost                   = &variable{key: "DB_READ_HOST", defaultValue: "localhost"}
+	dbReadPort                   = &variable{key: "DB_READ_PORT", defaultValue: "5432"}
+	dbReadName                   = &variable{key: "DB_READ_NAME", defaultValue: "go-project-template"}
+	dbReadUsername               = &variable{key: "DB_READ_USERNAME", defaultValue: "postgres"}
+	dbReadPassword               = &variable{key: "DB_READ_PASSWORD", defaultValue: "postgres123"}
+	dbReadMinConnections         = &variable{key: "DB_READ_MIN_CONNECTIONS", defaultValue: "2"}
+	dbReadMaxConnections         = &variable{key: "DB_READ_MAX_CONNECTIONS", defaultValue: "10"}
+	dbReadConnectionMaxLifeTime  = &variable{key: "DB_READ_CONNECTION_MAX_LIFE_TIME", defaultValue: "900"}
+	dbReadConnectionMaxIdleTime  = &variable{key: "DB_READ_CONNECTION_MAX_IDLE_TIME", defaultValue: "60"}
+	dbWriteHost                  = &variable{key: "DB_WRITE_HOST", defaultValue: "localhost"}
+	dbWritePort                  = &variable{key: "DB_WRITE_PORT", defaultValue: "5432"}
+	dbWriteName                  = &variable{key: "DB_WRITE_NAME", defaultValue: "go-project-template"}
+	dbWriteUsername              = &variable{key: "DB_WRITE_USERNAME", defaultValue: "postgres"}
+	dbWritePassword              = &variable{key: "DB_WRITE_PASSWORD", defaultValue: "postgres123"}
+	dbWriteMinConnections        = &variable{key: "DB_WRITE_MIN_CONNECTIONS", defaultValue: "2"}
+	dbWriteMaxConnections        = &variable{key: "DB_WRITE_MAX_CONNECTIONS", defaultValue: "10"}
+	dbWriteConnectionMaxLifeTime = &variable{key: "DB_WRITE_CONNECTION_MAX_LIFE_TIME", defaultValue: "900"}
+	dbWriteConnectionMaxIdleTime = &variable{key: "DB_WRITE_CONNECTION_MAX_IDLE_TIME", defaultValue: "60"}
+	redisHost                    = &variable{key: "REDIS_HOST", defaultValue: "localhost"}
+	redisPort                    = &variable{key: "REDIS_PORT", defaultValue: "6379"}
+	redisPassword                = &variable{key: "REDIS_PASSWORD", defaultValue: ""}
+	redisDB                      = &variable{key: "REDIS_DB", defaultValue: "1"}
 )
 
-func AppName() string {
-	return get(appName)
+func ServiceName() string {
+	return get(serviceName)
 }
 
-func AppVersion() string {
-	return get(appVersion)
+func ServiceVersion() string {
+	return get(serviceVersion)
 }
 
-func Env() string {
-	return get(env)
+func Environment() string {
+	return get(environment)
 }
 
 func IsLambda() bool {
@@ -66,44 +80,84 @@ func ServerTimeout() int {
 	return getInt(serverTimeout)
 }
 
-func DBHost() string {
-	return get(dbHost)
+func DBReadHost() string {
+	return get(dbReadHost)
 }
 
-func DBPort() string {
-	return get(dbPort)
+func DBReadPort() string {
+	return get(dbReadPort)
 }
 
-func DBName() string {
-	return get(dbName)
+func DBReadName() string {
+	return get(dbReadName)
 }
 
-func DBUsername() string {
-	return get(dbUsername)
+func DBReadUsername() string {
+	return get(dbReadUsername)
 }
 
-func DBPassword() string {
-	return get(dbPassword)
+func DBReadPassword() string {
+	return get(dbReadPassword)
 }
 
-func DBMinConnections() int {
-	return getInt(dbMinConnections)
+func DBReadMinConnections() int {
+	return getInt(dbReadMinConnections)
 }
 
-func DBMaxConnections() int {
-	return getInt(dbMaxConnections)
+func DBReadMaxConnections() int {
+	return getInt(dbReadMaxConnections)
 }
 
-func DBConnectionMaxLifeTime() time.Duration {
-	return time.Second * time.Duration(getInt(dbConnectionMaxLifeTime))
+func DBReadConnectionMaxLifeTime() time.Duration {
+	return time.Second * time.Duration(getInt(dbReadConnectionMaxLifeTime))
 }
 
-func DBConnectionMaxIdleTime() time.Duration {
-	return time.Second * time.Duration(getInt(dbConnectionMaxIdleTime))
+func DBReadConnectionMaxIdleTime() time.Duration {
+	return time.Second * time.Duration(getInt(dbReadConnectionMaxIdleTime))
 }
 
-func RedisEndpoint() string {
-	return get(redisEndpoint)
+func DBWriteHost() string {
+	return get(dbWriteHost)
+}
+
+func DBWritePort() string {
+	return get(dbWritePort)
+}
+
+func DBWriteName() string {
+	return get(dbWriteName)
+}
+
+func DBWriteUsername() string {
+	return get(dbWriteUsername)
+}
+
+func DBWritePassword() string {
+	return get(dbWritePassword)
+}
+
+func DBWriteMinConnections() int {
+	return getInt(dbWriteMinConnections)
+}
+
+func DBWriteMaxConnections() int {
+	return getInt(dbWriteMaxConnections)
+}
+
+func DBWriteConnectionMaxLifeTime() time.Duration {
+	return time.Second * time.Duration(getInt(dbWriteConnectionMaxLifeTime))
+}
+
+func DBWriteConnectionMaxIdleTime() time.Duration {
+	return time.Second * time.Duration(getInt(dbWriteConnectionMaxIdleTime))
+}
+
+func RedisHost() string {
+	return get(redisHost)
+}
+
+func RedisPort() int {
+	return getInt(redisPort)
 }
 
 func RedisPassword() string {
@@ -117,7 +171,7 @@ func RedisDB() int {
 func get(env *variable) string {
 	value := os.Getenv(env.key)
 
-	if value == "" {
+	if len(value) == 0 {
 		return env.defaultValue
 	}
 
@@ -129,14 +183,7 @@ func getInt(env *variable) int {
 	intValue, err := strconv.Atoi(value)
 
 	if err != nil {
-		//logger.Warn(nil, fmt.Sprintf("Error while trying to convert %s with value %s to int. Using default value %s", env.key, value, env.defaultValue), logger.Details{
-		//	"environment_variable": dbMinConnections.key,
-		//	"error_value":          value,
-		//	"default_value":        env.defaultValue,
-		//	"error":                err,
-		//})
-
-		intValue, _ = strconv.Atoi(env.defaultValue)
+		logFatal(env, "int", value, err)
 	}
 
 	return intValue
@@ -147,15 +194,17 @@ func getBool(env *variable) bool {
 	boolValue, err := strconv.ParseBool(value)
 
 	if err != nil {
-		//logger.Warn(nil, fmt.Sprintf("Error while trying to convert %s with value %s to bool. Using default value %s", env.key, value, env.defaultValue), logger.Details{
-		//	"environment_variable": dbMinConnections.key,
-		//	"error_value":          value,
-		//	"default_value":        env.defaultValue,
-		//	"error":                err,
-		//})
-
-		boolValue, _ = strconv.ParseBool(env.defaultValue)
+		logFatal(env, "bool", value, err)
 	}
 
 	return boolValue
+}
+
+func logFatal(env *variable, varType string, returnedValue string, err error) {
+	logger.Fatal(context.Background(), fmt.Sprintf("Error while trying to convert variable [%s] with value [%s] to [%s].", env.key, returnedValue, varType), attributes.Attributes{
+		"variable.key":           env.key,
+		"variable.type":          varType,
+		"variable.value":         returnedValue,
+		"variable.default_value": env.defaultValue,
+	}.WithError(err))
 }

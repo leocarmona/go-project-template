@@ -4,19 +4,27 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/leocarmona/go-project-template/internal/infra/logger/attributes"
-	"github.com/leocarmona/go-project-template/internal/infra/variables"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"sync"
 )
 
+type Option struct {
+	ServiceName    string
+	ServiceVersion string
+	Environment    string
+	LogLevel       string
+}
+
 var (
 	once    sync.Once
 	skipper = zap.AddCallerSkip(1)
+	option  *Option
 )
 
-func Init() {
+func Init(opt *Option) {
 	once.Do(func() {
+		option = opt
 		zapLogger, err := newZap()
 
 		if err != nil {
@@ -27,8 +35,8 @@ func Init() {
 	})
 }
 
-func Sync() error {
-	return zap.L().Sync()
+func Sync() {
+	_ = zap.L().Sync()
 }
 
 func Debug(ctx context.Context, message string, attr attributes.Attributes) {
@@ -57,7 +65,7 @@ func newZap(options ...zap.Option) (*zap.Logger, error) {
 
 func newZapConfig() zap.Config {
 	logLevel := zap.NewAtomicLevel()
-	err := logLevel.UnmarshalText([]byte(variables.LogLevel()))
+	err := logLevel.UnmarshalText([]byte(option.LogLevel))
 
 	if err != nil {
 		panic(err)
@@ -112,9 +120,9 @@ func makeAttributes(ctx context.Context, attr attributes.Attributes) []zapcore.F
 	return []zapcore.Field{
 		zap.Any("Attributes", attr),
 		zap.Any("Resource", map[string]interface{}{
-			"service.name":    variables.AppName(),
-			"service.version": variables.AppVersion(),
-			"service.env":     variables.Env(),
+			"service.name":        option.ServiceName,
+			"service.version":     option.ServiceVersion,
+			"service.environment": option.Environment,
 		}),
 	}
 }
