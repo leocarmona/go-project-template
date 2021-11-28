@@ -25,7 +25,6 @@ func (h *HealthHandler) Configure(server *echo.Echo) {
 
 func (h *HealthHandler) health(c echo.Context) error {
 	ctx := c.Request().Context()
-
 	read := h.services.Health.HealthReadDB(ctx)
 	write := h.services.Health.HealthWriteDB(ctx)
 
