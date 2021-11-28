@@ -69,6 +69,7 @@ func (r *Redis) initializeAndGetRedis() *redis.Client {
 		return rdb
 	}
 
+	start := time.Now()
 	logger.Info(context.Background(), "Initializing Redis", r.configToAttribute())
 
 	rdb = redis.NewClient(r.opt)
@@ -85,7 +86,8 @@ func (r *Redis) initializeAndGetRedis() *redis.Client {
 		logger.Fatal(context.Background(), "Failed to connect to Redis database", r.configToAttribute().WithError(err))
 	}
 
-	logger.Info(context.Background(), "Redis initialized", r.configToAttribute())
+	elapsed := time.Since(start)
+	logger.Info(context.Background(), fmt.Sprintf("Redis initialized in [%v]", elapsed), r.configToAttribute())
 
 	r.rdb = rdb
 	return rdb

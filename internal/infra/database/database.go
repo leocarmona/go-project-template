@@ -76,6 +76,7 @@ func (d *Database) initializeAndGetDB() *sql.DB {
 		return db
 	}
 
+	start := time.Now()
 	logger.Info(context.Background(), fmt.Sprintf("Initializing database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute())
 	var err error
 
@@ -103,7 +104,8 @@ func (d *Database) initializeAndGetDB() *sql.DB {
 
 	d.db = db
 
-	logger.Info(context.Background(), fmt.Sprintf("Database [%s] initialized with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute())
+	elapsed := time.Since(start)
+	logger.Info(context.Background(), fmt.Sprintf("Database [%s] initialized with connection [%s] in [%v]", d.config.Database, d.config.ConnectionName, elapsed), d.configToAttribute())
 
 	return db
 }
