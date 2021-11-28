@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/leocarmona/go-project-template/test"
+	"github.com/leocarmona/go-project-template/internal/test"
 	"net/http"
 	"testing"
 )
