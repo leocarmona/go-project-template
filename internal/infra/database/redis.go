@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/leocarmona/go-project-template/internal/infra/logger"
 	"github.com/leocarmona/go-project-template/internal/infra/logger/attributes"
@@ -10,14 +11,22 @@ import (
 )
 
 type Redis struct {
-	rdb    *redis.Client
-	opt    *redis.Options
-	locker sync.Mutex
+	rdb     *redis.Client
+	opt     *redis.Options
+	retries []time.Duration
+	locker  sync.Mutex
 }
 
 func NewRedis(opt *redis.Options, lazyConnection bool) *Redis {
 	rdb := &Redis{
 		opt: opt,
+		retries: []time.Duration{
+			250 * time.Millisecond,
+			500 * time.Millisecond,
+			1000 * time.Millisecond,
+			2500 * time.Millisecond,
+			5000 * time.Millisecond,
+		},
 	}
 
 	if !lazyConnection {
@@ -47,34 +56,46 @@ func (r *Redis) Close() {
 }
 
 func (r *Redis) initializeAndGetRedis() *redis.Client {
-	db := r.rdb
-	if db != nil {
-		return db
+	rdb := r.rdb
+	if rdb != nil {
+		return rdb
 	}
 
 	r.locker.Lock()
 	defer r.locker.Unlock()
 
 	// double-checked locking
-	if db := r.rdb; db != nil {
-		return db
+	if rdb = r.rdb; rdb != nil {
+		return rdb
 	}
 
 	logger.Info(context.Background(), "Initializing Redis", r.configToAttribute())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+	rdb = redis.NewClient(r.opt)
+	var err error
 
-	rdb := redis.NewClient(r.rdb.Options())
-
-	if err := rdb.Ping(ctx).Err(); err != nil {
-		logger.Error(context.Background(), "Failed to ping Redis database", r.configToAttribute().WithError(err))
-	} else {
-		logger.Info(context.Background(), "Redis initialized", r.configToAttribute())
+	for retry, duration := range r.retries {
+		if err = r.checkConnection(rdb); err != nil {
+			logger.Warn(context.Background(), fmt.Sprintf("Connection retry [%d]: Redis connection", retry + 1), r.configToAttribute().WithError(err))
+			time.Sleep(duration)
+		}
 	}
+
+	if err = r.checkConnection(rdb); err != nil {
+		logger.Fatal(context.Background(), "Failed to connect to Redis database", r.configToAttribute().WithError(err))
+	}
+
+	logger.Info(context.Background(), "Redis initialized", r.configToAttribute())
 
 	r.rdb = rdb
 	return rdb
+}
+
+func (r *Redis) checkConnection(rdb *redis.Client) error {
+	timeout, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return rdb.Ping(timeout).Err()
 }
 
 func (r *Redis) configToAttribute() attributes.Attributes {

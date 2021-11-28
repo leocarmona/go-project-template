@@ -18,6 +18,7 @@ type (
 		db                      *sql.DB
 		config                  *SqlConfig
 		connectionStringBuilder ConnectionStringBuilder
+		retries                 []time.Duration
 		locker                  sync.Mutex
 	}
 )
@@ -26,6 +27,13 @@ func NewDatabase(cfg *SqlConfig, connectionStringBuilder ConnectionStringBuilder
 	database := &Database{
 		config:                  cfg,
 		connectionStringBuilder: connectionStringBuilder,
+		retries: []time.Duration{
+			250 * time.Millisecond,
+			500 * time.Millisecond,
+			1000 * time.Millisecond,
+			2500 * time.Millisecond,
+			5000 * time.Millisecond,
+		},
 	}
 
 	if !cfg.LazyConnection {
@@ -69,16 +77,22 @@ func (d *Database) initializeAndGetDB() *sql.DB {
 	}
 
 	logger.Info(context.Background(), fmt.Sprintf("Initializing database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute())
-	db, err := sql.Open(d.config.Driver, d.connectionStringBuilder(d.config))
+	var err error
 
-	if err != nil {
-		logger.Fatal(context.Background(), fmt.Sprintf("Failed to initialize the database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
+	for retry, duration := range d.retries {
+		db, err = sql.Open(d.config.Driver, d.connectionStringBuilder(d.config))
+
+		if err != nil {
+			logger.Fatal(context.Background(), fmt.Sprintf("Failed to initialize the database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
+		}
+
+		if err = d.checkConnection(db); err != nil {
+			logger.Warn(context.Background(), fmt.Sprintf("Connection retry [%d]: Database [%s] with connection [%s]", retry + 1, d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
+			time.Sleep(duration)
+		}
 	}
 
-	timeout, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	if err = db.PingContext(timeout); err != nil {
+	if err := d.checkConnection(db); err != nil {
 		logger.Fatal(context.Background(), fmt.Sprintf("Failed to connect to the database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
 	}
 
@@ -92,6 +106,13 @@ func (d *Database) initializeAndGetDB() *sql.DB {
 	logger.Info(context.Background(), fmt.Sprintf("Database [%s] initialized with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute())
 
 	return db
+}
+
+func (d *Database) checkConnection(db *sql.DB) error {
+	timeout, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return db.PingContext(timeout)
 }
 
 func (d *Database) configToAttribute() attributes.Attributes {
