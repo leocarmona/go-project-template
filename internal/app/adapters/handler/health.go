@@ -28,9 +28,9 @@ func (h *HealthHandler) Configure(server *echo.Echo) {
 func (h *HealthHandler) health(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	var read, write *health.Health
+	var read, write, redis *health.Health
 	var waitGroup sync.WaitGroup
-	waitGroup.Add(2)
+	waitGroup.Add(3)
 
 	go func() {
 		defer waitGroup.Done()
@@ -50,9 +50,18 @@ func (h *HealthHandler) health(c echo.Context) error {
 		}
 	}()
 
+	go func() {
+		defer waitGroup.Done()
+
+		redis = h.services.Health.HealthRedisDB(ctx)
+		if redis.Error != nil {
+			logger.Error(ctx, "Health check error on redis database", attributes.New().WithError(redis.Error))
+		}
+	}()
+
 	waitGroup.Wait()
 
-	response := presenter.HealthResponse(read, write)
+	response := presenter.HealthResponse(read, write, redis)
 	var code int
 
 	if response.Healthy {

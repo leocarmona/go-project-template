@@ -5,7 +5,7 @@ import (
 	"github.com/leocarmona/go-project-template/internal/app/interface/outbound"
 )
 
-func HealthResponse(read *health.Health, write *health.Health) *outbound.HealthResponse {
+func HealthResponse(read *health.Health, write *health.Health, redis *health.Health) *outbound.HealthResponse {
 	response := &outbound.HealthResponse{}
 
 	if read.Up {
@@ -20,7 +20,13 @@ func HealthResponse(read *health.Health, write *health.Health) *outbound.HealthR
 		response.WriteDB = "DOWN"
 	}
 
-	response.Healthy = read.Up && write.Up
+	if redis.Up {
+		response.RedisDB = "UP"
+	} else {
+		response.RedisDB = "DOWN"
+	}
+
+	response.Healthy = read.Up && write.Up && redis.Up
 
 	return response
 }

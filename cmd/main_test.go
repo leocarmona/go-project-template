@@ -20,5 +20,6 @@ func TestShouldRunApp(t *testing.T) {
 			"healthy":  true,
 			"read_db":  "UP",
 			"write_db": "UP",
+			"redis_db": "UP",
 		}).Done()
 }

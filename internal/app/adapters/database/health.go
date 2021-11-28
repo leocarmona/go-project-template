@@ -1,4 +1,4 @@
-package postgres
+package database
 
 import (
 	"github.com/leocarmona/go-project-template/internal/app/domain/health"
@@ -22,6 +22,14 @@ func (r *HealthRepository) HealthReadDB(ctx context.Context) *health.Health {
 
 func (r *HealthRepository) HealthWriteDB(ctx context.Context) *health.Health {
 	return r.checkConnection(ctx, r.dbs.Write)
+}
+
+func (r *HealthRepository) HealthRedisDB(ctx context.Context) *health.Health {
+	err := r.dbs.Redis.Connection().Ping(ctx).Err()
+	return &health.Health{
+		Up:    err == nil,
+		Error: err,
+	}
 }
 
 func (r *HealthRepository) checkConnection(ctx context.Context, db *database.Database) *health.Health {
