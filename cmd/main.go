@@ -14,8 +14,8 @@ func main() {
 		LogLevel:       variables.LogLevel(),
 	})
 
-	logger.Sync()
+	defer logger.Sync()
 
 	application := app.Instance()
-	application.Start()
+	application.Start(false)
 }

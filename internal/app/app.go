@@ -32,7 +32,7 @@ func Instance() *App {
 	return app
 }
 
-func (app *App) Start() {
+func (app *App) Start(async bool) {
 	app.locker.Lock()
 
 	if app.running {
@@ -41,21 +41,16 @@ func (app *App) Start() {
 	}
 
 	app.setRunning(true)
-	defer app.setRunning(false)
-
 	logger.Info(context.Background(), "Starting application", nil)
 
 	app.build()
 	logger.Info(context.Background(), "Application started", nil)
 	app.locker.Unlock()
 
-	if variables.IsLambda() {
-		lambdaAdapter := &aws.LambdaAdapter{Echo: app.server}
-		lambda.Start(lambdaAdapter.Handler)
-		logger.Warn(context.Background(), "Application stopped [Lambda]", nil)
+	if async {
+		go app.startServer()
 	} else {
-		err := gracehttp.Serve(app.server.Server)
-		logger.Warn(context.Background(), "Application stopped gracefully", attributes.New().WithError(err))
+		app.startServer()
 	}
 }
 
@@ -84,6 +79,19 @@ func (app *App) Stop() {
 
 func (app *App) IsRunning() bool {
 	return app.running
+}
+
+func (app *App) startServer() {
+	defer app.setRunning(false)
+
+	if variables.IsLambda() {
+		lambdaAdapter := &aws.LambdaAdapter{Echo: app.server}
+		lambda.Start(lambdaAdapter.Handler)
+		logger.Warn(context.Background(), "Application stopped [Lambda]", nil)
+	} else {
+		err := gracehttp.Serve(app.server.Server)
+		logger.Warn(context.Background(), "Application stopped gracefully", attributes.New().WithError(err))
+	}
 }
 
 func (app *App) build() {
