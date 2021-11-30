@@ -24,18 +24,30 @@ func InitLogger() {
 }
 
 func ComposeUp(t *testing.T) {
-	Shell(t, fmt.Sprintf("cd %s && make compose-up", findProjectFolder(t)))
+	result := make(chan bool, 1)
+	defer close(result)
 
-	for i := 0; i < 30; i++ {
-		postgres, _ := ShellErr("docker ps | grep postgres")
-		redis, _ := ShellErr("docker ps | grep redis")
+	go func() {
+		Shell(t, fmt.Sprintf("cd %s && make compose-up", findProjectFolder(t)))
 
-		if strings.Contains(postgres, "healthy") &&
-			strings.Contains(redis, "healthy") {
-			break
+		for {
+			postgres, _ := ShellErr("docker ps | grep postgres")
+			redis, _ := ShellErr("docker ps | grep redis")
+
+			if strings.Contains(postgres, "healthy") &&
+				strings.Contains(redis, "healthy") {
+				break
+			}
+
+			time.Sleep(100 * time.Millisecond)
 		}
 
-		time.Sleep(100 * time.Millisecond)
+		result <- true
+	}()
+
+	select {
+	case <-result:
+	case <-time.After(10 * time.Second):
 	}
 }
 
@@ -43,16 +55,23 @@ func ComposeDown(t *testing.T) {
 	Shell(t, fmt.Sprintf("cd %s && make compose-up", findProjectFolder(t)))
 }
 
-func StartApplication() {
+func StartApplication(newApplication bool) {
 	_ = os.Setenv("DB_READ_PORT", "6432")
 	_ = os.Setenv("DB_WRITE_PORT", "6432")
 
-	if app.Instance().IsRunning() {
+	if newApplication {
+		StopApplication()
+	} else if app.Instance().IsRunning() {
 		return
 	}
 
 	app.Instance().Start(true)
 	time.Sleep(10 * time.Millisecond)
+}
+
+func StopApplication() {
+	app.Instance().Stop()
+	_, _ = ShellErr("fuser -k 5000/tcp") // force port kill
 }
 
 func Request() *baloo.Client {
@@ -88,8 +107,12 @@ func findProjectFolder(t *testing.T) string {
 	for i := len(folders) - 1; i >= 0; i-- {
 		folder := strings.Join(folders[:i], "/")
 
-		out := Shell(t, fmt.Sprintf("ls %s", folder))
-		if strings.Contains(out, "go.mod") {
+		out, err := ShellErr(fmt.Sprintf("ls %s | grep go.mod", folder))
+		if err != nil {
+			continue
+		}
+
+		if strings.TrimSpace(out) == "go.mod" {
 			return folder
 		}
 	}
