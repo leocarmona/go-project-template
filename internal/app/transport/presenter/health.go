@@ -2,7 +2,7 @@ package presenter
 
 import (
 	"github.com/leocarmona/go-project-template/internal/app/domain/health"
-	"github.com/leocarmona/go-project-template/internal/app/interface/outbound"
+	"github.com/leocarmona/go-project-template/internal/app/transport/outbound"
 )
 
 func HealthResponse(read *health.Health, write *health.Health, redis *health.Health) *outbound.HealthResponse {

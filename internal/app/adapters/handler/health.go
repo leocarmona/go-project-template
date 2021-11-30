@@ -4,7 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/leocarmona/go-project-template/internal/app/domain"
 	"github.com/leocarmona/go-project-template/internal/app/domain/health"
-	"github.com/leocarmona/go-project-template/internal/app/interface/presenter"
+	"github.com/leocarmona/go-project-template/internal/app/transport/presenter"
 	"github.com/leocarmona/go-project-template/internal/infra/logger"
 	"github.com/leocarmona/go-project-template/internal/infra/logger/attributes"
 	"net/http"
