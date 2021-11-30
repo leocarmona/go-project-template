@@ -1,7 +1,7 @@
-package main
+package cmd
 
 import (
-	"github.com/leocarmona/go-project-template/internal/test"
+	"github.com/leocarmona/go-project-template/test"
 	"net/http"
 	"testing"
 )

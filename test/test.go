@@ -26,7 +26,7 @@ func InitLogger() {
 func ComposeUp(t *testing.T) {
 	Shell(t, fmt.Sprintf("cd %s && make compose-up", findProjectFolder(t)))
 
-	for i := 0; i <= 30; i++ {
+	for i := 0; i < 30; i++ {
 		postgres, _ := ShellErr("docker ps | grep postgres")
 		redis, _ := ShellErr("docker ps | grep redis")
 
