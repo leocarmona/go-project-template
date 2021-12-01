@@ -55,23 +55,19 @@ func ComposeDown(t *testing.T) {
 	Shell(t, fmt.Sprintf("cd %s && make compose-up", findProjectFolder(t)))
 }
 
-func StartApplication(newApplication bool) {
+func StartApplication() {
 	_ = os.Setenv("DB_READ_PORT", "6432")
 	_ = os.Setenv("DB_WRITE_PORT", "6432")
 
-	if newApplication {
-		StopApplication()
-	} else if app.Instance().IsRunning() {
+	if app.Instance().IsRunning() {
 		return
 	}
 
 	app.Instance().Start(true)
-	time.Sleep(10 * time.Millisecond)
 }
 
 func StopApplication() {
 	app.Instance().Stop()
-	_, _ = ShellErr("fuser -k 5000/tcp") // force port kill
 }
 
 func Request() *baloo.Client {

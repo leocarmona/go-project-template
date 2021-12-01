@@ -9,7 +9,7 @@ import (
 func TestShouldRunApp(t *testing.T) {
 	test.InitLogger()
 	test.ComposeUp(t)
-	test.StartApplication(true)
+	test.StartApplication()
 
 	_ = test.Request().
 		Get("/health").
