@@ -28,7 +28,7 @@ build-lambda: lint ## Build lambda binary
 	rm -rfv $(LAMBDA_BINARY);
 
 run: ## Run API
-	$(DOCKERCMD) run --net=host --env DB_PORT=6432 -d -t $(IMAGE_NAME)
+	$(DOCKERCMD) run --net=host --env DB_READ_PORT=6432 --env DB_WRITE_PORT=6432 -d -t $(IMAGE_NAME)
 
 stop: ## Stop API
 	$(DOCKERCMD) stop $$($(DOCKERCMD) ps -q --filter ancestor=go-project-template )
