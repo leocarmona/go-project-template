@@ -18,6 +18,10 @@ help: ## Display help screen
 	@echo "Commands: \n"
 	@grep -h -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
+up: compose-up build run ## Up application and dependencies
+
+down: stop compose-down ## Down application and dependencies
+
 build: ## Build image
 	$(DOCKERCMD) build -t $(IMAGE_NAME) .
 
