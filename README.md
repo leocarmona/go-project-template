@@ -17,10 +17,12 @@ make up
 * [TL;DR](#go-project-template)
 * [Prerequisites](#prerequisites)
 * [About the Project](#about-the-project)
-* [Up](#up)
-* [Down](#down)
-* [Testing](#testing)
-* [Documentation](#documentation)
+* [Environment Variables](#environment-variables)
+* [Main Commands](#main-commands)
+  * [Up](#up)
+  * [Down](#down)
+  * [Testing](#testing)
+  * [Documentation](#documentation)
 
 ## About The Project
 
@@ -36,6 +38,54 @@ We use these following technologies in this project:
 * [docker](https://www.docker.com/);
 * [docker-compose](https://github.com/docker/compose/);
 * and other technologies.
+
+## Environment Variables
+
+Configure the following environment variables for local project execution:
+
+| Variable                          | Default Value                                            |
+| --------------------------------- | -------------------------------------------------------- |
+| SERVICE_NAME                      | go-project-template                                      |
+| SERVICE_VERSION                   | 0.0.1                                                    |
+| ENVIRONMENT                       | local                                                    |
+| LAMBDA                            | false                                                    |
+| LOG_LEVEL                         | debug                                                    |
+| SERVER_HOST                       | 0.0.0.0                                                  |
+| SERVER_PORT                       | 5000                                                     |
+| SERVER_TIMEOUT                    | 30                                                       |
+| DB_READ_HOST                      | localhost                                                |
+| DB_READ_PORT                      | 5432                                                     |
+| DB_READ_NAME                      | go-project-template                                      |
+| DB_READ_USERNAME                  | postgres                                                 |
+| DB_READ_PASSWORD                  | postgres123                                              |
+| DB_READ_LAZY_CONNECTION           | true                                                     |
+| DB_READ_MIN_CONNECTIONS           | 2                                                        |
+| DB_READ_MAX_CONNECTIONS           | 10                                                       |
+| DB_READ_CONNECTION_MAX_LIFE_TIME  | 900                                                      |
+| DB_READ_CONNECTION_MAX_IDLE_TIME  | 60                                                       |
+| DB_WRITE_HOST                     | localhost                                                |
+| DB_WRITE_PORT                     | 5432                                                     |
+| DB_WRITE_NAME                     | go-project-template                                      |
+| DB_WRITE_USERNAME                 | postgres                                                 |
+| DB_WRITE_PASSWORD                 | postgres123                                              |
+| DB_WRITE_LAZY_CONNECTION          | true                                                     |
+| DB_WRITE_MIN_CONNECTIONS          | 2                                                        |
+| DB_WRITE_MAX_CONNECTIONS          | 10                                                       |
+| DB_WRITE_CONNECTION_MAX_LIFE_TIME | 900                                                      |
+| DB_WRITE_CONNECTION_MAX_IDLE_TIME | 60                                                       |
+| REDIS_HOST                        | localhost                                                |
+| REDIS_PORT                        | 6379                                                     |
+| REDIS_PASSWORD                    |                                                          |
+| REDIS_DB                          | 1                                                        |
+| REDIS_LAZY_CONNECTION             | true                                                     |
+
+Environment variables separated by semicolon:
+
+```
+SERVICE_NAME=go-project-template;SERVICE_VERSION=0.0.1;ENVIRONMENT=local;LAMBDA=false;LOG_LEVEL=debug;SERVER_HOST=0.0.0.0;SERVER_PORT=5000;SERVER_TIMEOUT=30;DB_READ_HOST=localhost;DB_READ_PORT=5432;DB_READ_NAME=go-project-template;DB_READ_USERNAME=postgres;DB_READ_PASSWORD=postgres123;DB_READ_LAZY_CONNECTION=true;DB_READ_MIN_CONNECTIONS=2;DB_READ_MAX_CONNECTIONS=10;DB_READ_CONNECTION_MAX_LIFE_TIME=900;DB_READ_CONNECTION_MAX_IDLE_TIME=60;DB_WRITE_HOST=localhost;DB_WRITE_PORT=5432;DB_WRITE_NAME=go-project-template;DB_WRITE_USERNAME=postgres;DB_WRITE_PASSWORD=postgres123;DB_WRITE_LAZY_CONNECTION=true;DB_WRITE_MIN_CONNECTIONS=2;DB_WRITE_MAX_CONNECTIONS=10;DB_WRITE_CONNECTION_MAX_LIFE_TIME=900;DB_WRITE_CONNECTION_MAX_IDLE_TIME=60;REDIS_HOST=localhost;REDIS_PORT=6379;REDIS_PASSWORD=;REDIS_DB=1;REDIS_LAZY_CONNECTION=true;
+```
+
+## Main Commands
 
 ### Up
 To start application and all dependenciove in this project, run:
