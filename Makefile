@@ -35,7 +35,7 @@ run: ## Run API
 	$(DOCKERCMD) run --net=host --env DB_READ_PORT=6432 --env DB_WRITE_PORT=6432 -d -t $(IMAGE_NAME)
 
 stop: ## Stop API
-	$(DOCKERCMD) stop $$($(DOCKERCMD) ps -q --filter ancestor=go-project-template )
+	$(DOCKERCMD) stop $$($(DOCKERCMD) ps -q --filter ancestor=$(IMAGE_NAME) ) || true
 
 compose-up: ## Run docker-compose services of project
 	$(DOCKERCOMPOSECMD) up -d
