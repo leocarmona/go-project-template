@@ -7,6 +7,7 @@ import (
 )
 
 func TestShouldHealth(t *testing.T) {
+	defer test.StopApplication()
 	test.InitLogger()
 	test.ComposeUp(t)
 	test.StartApplication()

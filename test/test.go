@@ -7,7 +7,6 @@ import (
 	"github.com/leocarmona/go-project-template/internal/infra/variables"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/h2non/baloo.v3"
-	"os"
 	"os/exec"
 	"strings"
 	"testing"
@@ -31,11 +30,7 @@ func ComposeUp(t *testing.T) {
 		Shell(t, fmt.Sprintf("cd %s && make compose-up", findProjectFolder(t)))
 
 		for {
-			postgres, _ := ShellErr("docker ps | grep postgres")
-			redis, _ := ShellErr("docker ps | grep redis")
-
-			if strings.Contains(postgres, "healthy") &&
-				strings.Contains(redis, "healthy") {
+			if containerHealthy("postgres") && containerHealthy("redis") {
 				break
 			}
 
@@ -56,9 +51,6 @@ func ComposeDown(t *testing.T) {
 }
 
 func StartApplication() {
-	_ = os.Setenv("DB_READ_PORT", "6432")
-	_ = os.Setenv("DB_WRITE_PORT", "6432")
-
 	if app.Instance().IsRunning() {
 		return
 	}
@@ -68,6 +60,7 @@ func StartApplication() {
 
 func StopApplication() {
 	app.Instance().Stop()
+	_, _ = ShellErr("fuser -k 5000/tcp")
 }
 
 func Request() *baloo.Client {
@@ -79,7 +72,7 @@ func Shell(t *testing.T, command string) string {
 
 	if err != nil {
 		if ee, ok := err.(*exec.ExitError); ok {
-			assert.FailNow(t, fmt.Sprintf("out: %s\nerr: %s", string(out), string(ee.Stderr)))
+			assert.FailNow(t, fmt.Sprintf("out: %s\nerr: %s", out, string(ee.Stderr)))
 		}
 
 		assert.FailNow(t, err.Error())
@@ -115,4 +108,9 @@ func findProjectFolder(t *testing.T) string {
 
 	assert.FailNow(t, "Project folder not found")
 	return ""
+}
+
+func containerHealthy(image string) bool {
+	container, _ := ShellErr(fmt.Sprintf("docker ps | grep %s", image))
+	return strings.Contains(container, "healthy")
 }
