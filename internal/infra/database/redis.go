@@ -73,17 +73,24 @@ func (r *Redis) initializeAndGetRedis() *redis.Client {
 	logger.Info(context.Background(), "Initializing Redis", r.configToAttribute())
 
 	rdb = redis.NewClient(r.opt)
+	connected := false
 	var err error
 
 	for retry, duration := range r.retries {
 		if err = r.checkConnection(rdb); err != nil {
 			logger.Warn(context.Background(), fmt.Sprintf("Connection retry [%d]: Redis connection", retry+1), r.configToAttribute().WithError(err))
 			time.Sleep(duration)
+		} else {
+			connected = true
+			err = nil
+			break
 		}
 	}
 
-	if err = r.checkConnection(rdb); err != nil {
-		logger.Fatal(context.Background(), "Failed to connect to Redis database", r.configToAttribute().WithError(err))
+	if !connected {
+		if err = r.checkConnection(rdb); err != nil {
+			logger.Fatal(context.Background(), "Failed to connect to Redis database", r.configToAttribute().WithError(err))
+		}
 	}
 
 	elapsed := time.Since(start)

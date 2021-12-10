@@ -78,6 +78,7 @@ func (d *Database) initializeAndGetDB() *sql.DB {
 
 	start := time.Now()
 	logger.Info(context.Background(), fmt.Sprintf("Initializing database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute())
+	connected := false
 	var err error
 
 	for retry, duration := range d.retries {
@@ -90,11 +91,17 @@ func (d *Database) initializeAndGetDB() *sql.DB {
 		if err = d.checkConnection(db); err != nil {
 			logger.Warn(context.Background(), fmt.Sprintf("Connection retry [%d]: Database [%s] with connection [%s]", retry+1, d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
 			time.Sleep(duration)
+		} else {
+			connected = true
+			err = nil
+			break
 		}
 	}
 
-	if err := d.checkConnection(db); err != nil {
-		logger.Fatal(context.Background(), fmt.Sprintf("Failed to connect to the database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
+	if !connected {
+		if err := d.checkConnection(db); err != nil {
+			logger.Fatal(context.Background(), fmt.Sprintf("Failed to connect to the database [%s] with connection [%s]", d.config.Database, d.config.ConnectionName), d.configToAttribute().WithError(err))
+		}
 	}
 
 	db.SetMaxIdleConns(d.config.MinConnections)
